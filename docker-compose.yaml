@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    container_name: bizcorp_dipu_db1
+    environment:
+      POSTGRES_USER: bizcorp_user
+      POSTGRES_PASSWORD: bizcorp_erlang
+      POSTGRES_DB: bizxcorp_dev
+    networks:
+      - mynetwork
+    ports:
+      - "5432:5432"
+
+  app:
+    container_name: bizcorp_api
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    command: ["mix", "phx.server"]
+    ports:
+      - "4000:4000"
+    networks:
+      - mynetwork
+    environment:
+      DATABASE_URL: "ecto://bizcorp_user:bizcorp_erlang@db/bizxcorp_dev"
+      SECRET_KEY_BASE: really_long_secret
+
+volumes:
+  pg-data:
+    external: true
+
+networks:
+  mynetwork:
+    driver: bridge
+    name: mynetwork
